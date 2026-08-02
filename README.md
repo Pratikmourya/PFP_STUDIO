@@ -5,7 +5,7 @@ gray circle with a person silhouette — and lets you download the result as a
 PNG. No sign-up, no uploads, no server. Everything is drawn and exported
 locally in your browser.
 
-**[Live demo →](#)** <!-- https://pratikmourya.github.io/PFP_STUDIO/ -->
+**[Live demo →](#)** <!--https://pratikmourya.github.io/PFP_STUDIO/-->
 
 
 ## Features
