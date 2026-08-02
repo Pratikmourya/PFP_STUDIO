@@ -356,6 +356,32 @@
   }
   .swatch:hover{transform:translateY(-2px);}
 
+  .acc-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .acc-chip{
+    font-family:var(--mono);
+    font-size:11px;
+    padding:8px 13px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    background:linear-gradient(160deg,#fbfbfc,#e3e5e9);
+    color:var(--steel);
+    cursor:pointer;
+    letter-spacing:0.03em;
+    transition:all 0.15s ease;
+    box-shadow:0 1px 2px rgba(28,29,33,0.06);
+  }
+  .acc-chip:hover{color:var(--ink); border-color:var(--s4);}
+  .acc-chip.active{
+    background:linear-gradient(160deg,#3a3d44,#1c1d21);
+    color:var(--s1);
+    border-color:var(--ink-deep);
+    font-weight:700;
+  }
+
   .preset-grid{
     display:grid;
     grid-template-columns:repeat(4,1fr);
@@ -424,7 +450,7 @@
 
 <div class="top">
   <div class="brand">PFP<span class="slash">//</span>STUDIO</div>
-  <div class="tagline">avatar render unit v3</div>
+  <div class="tagline">avatar render unit v2</div>
 </div>
 
 <!-- AD SLOT: TOP BANNER
@@ -458,6 +484,32 @@
             <circle cx="100" cy="80" r="34"/>
             <path d="M100,124 C55,124 26,153 26,192 C26,197 30,200 35,200 L165,200 C170,200 174,197 174,192 C174,153 145,124 100,124 Z"/>
           </g>
+          <g id="accGroup" fill="#262a33">
+            <g id="acc-none"></g>
+            <g id="acc-sunglasses" style="display:none;">
+              <ellipse cx="84" cy="77" rx="16" ry="11"/>
+              <ellipse cx="116" cy="77" rx="16" ry="11"/>
+              <rect x="96" y="73" width="8" height="5" rx="2.5"/>
+              <rect x="63" y="74" width="10" height="4" rx="2" transform="rotate(-6 68 76)"/>
+              <rect x="127" y="74" width="10" height="4" rx="2" transform="rotate(6 132 76)"/>
+            </g>
+            <g id="acc-cap" style="display:none;">
+              <path d="M62,64 C62,36 78,40 100,40 C122,40 138,36 138,64 L138,70 C120,58 80,58 62,70 Z"/>
+              <path d="M100,58 C118,58 133,61 140,68 C142,70 141,74 137,74 C126,68 112,65 100,65 Z"/>
+            </g>
+            <g id="acc-headband" style="display:none;">
+              <rect x="61" y="53" width="78" height="10" rx="5" transform="rotate(-3 100 58)"/>
+              <circle cx="61" cy="55" r="4"/>
+            </g>
+            <g id="acc-beanie" style="display:none;">
+              <path d="M61,62 C61,28 79,28 100,28 C121,28 139,28 139,62 L139,68 L61,68 Z"/>
+              <rect x="59" y="58" width="82" height="12" rx="6"/>
+            </g>
+            <g id="acc-bandana" style="display:none;">
+              <path d="M61,64 C61,34 80,32 100,32 C120,32 139,34 139,64 C139,64 118,52 100,52 C82,52 61,64 61,64 Z"/>
+              <path d="M132,50 L146,44 L138,60 Z"/>
+            </g>
+          </g>
         </svg>
       </div>
     </div>
@@ -471,7 +523,7 @@
     </div>
 
     <button class="download-btn" id="downloadBtn">▾ Download PNG — Free</button>
-    <button class="randomize-btn" id="randomizeBtn"><span class="dice">◆</span> Randomize Colours</button>
+    <button class="randomize-btn" id="randomizeBtn"><span class="dice">◆</span> Randomize All</button>
   </div>
 
   <div class="controls-col">
@@ -500,13 +552,32 @@
       <div class="swatches" id="personSwatches"></div>
     </div>
 
+    <div class="control-block">
+      <div class="control-title"><span class="swatch-dot" id="accDot" style="background:#262a33;"></span>Accessory</div>
+      <div class="acc-grid" id="accGrid">
+        <button class="acc-chip active" data-acc="none">None</button>
+        <button class="acc-chip" data-acc="sunglasses">Sunglasses</button>
+        <button class="acc-chip" data-acc="cap">Cap</button>
+        <button class="acc-chip" data-acc="headband">Headband</button>
+        <button class="acc-chip" data-acc="beanie">Beanie</button>
+        <button class="acc-chip" data-acc="bandana">Bandana</button>
+      </div>
+      <div class="picker-row" style="margin-top:14px;">
+        <input type="color" id="accColorPicker" value="#262a33">
+        <div class="hex-field">
+          <span>#</span>
+          <input type="text" id="accHexInput" maxlength="6" value="262A33">
+        </div>
+      </div>
+    </div>
+
     <div class="control-block presets-block">
       <div class="control-title">Quick Combos</div>
       <div class="preset-grid" id="presetGrid"></div>
     </div>
 
     <div class="note">
-      Type any hex on <b>either</b> layer or grab the wheel. Nothing uploads — it's drawn and exported straight in your browser.
+      Type any hex on <b>any</b> layer — background, person, or accessory — or grab the wheel. Nothing uploads — it's drawn and exported straight in your browser.
     </div>
 
   </div>
@@ -564,6 +635,43 @@
     personDot.style.background = val;
     personHexInput.value = hex.toUpperCase();
   }
+
+  // Accessories
+  const accGroup = document.getElementById('accGroup');
+  const accColorPicker = document.getElementById('accColorPicker');
+  const accHexInput = document.getElementById('accHexInput');
+  const accDot = document.getElementById('accDot');
+  const accChips = document.querySelectorAll('.acc-chip');
+  const accNames = ['none','sunglasses','cap','headband','beanie','bandana'];
+  let currentAcc = 'none';
+
+  function setAccessory(name){
+    if(!accNames.includes(name)) name = 'none';
+    currentAcc = name;
+    accNames.forEach(n => {
+      const el = document.getElementById('acc-' + n);
+      if(el) el.style.display = (n === name) ? '' : 'none';
+    });
+    accChips.forEach(chip => chip.classList.toggle('active', chip.dataset.acc === name));
+  }
+
+  function setAccColor(hex){
+    const val = '#' + hex;
+    accGroup.setAttribute('fill', val);
+    accColorPicker.value = val;
+    accDot.style.background = val;
+    accHexInput.value = hex.toUpperCase();
+  }
+
+  accChips.forEach(chip => {
+    chip.addEventListener('click', () => setAccessory(chip.dataset.acc));
+  });
+  accColorPicker.addEventListener('input', (e) => setAccColor(e.target.value.replace('#','')));
+  accHexInput.addEventListener('input', (e) => {
+    const hex = e.target.value.replace('#','').trim();
+    if(isValidHex(hex)) setAccColor(hex);
+  });
+  accHexInput.addEventListener('blur', () => { accHexInput.value = accColorPicker.value.replace('#','').toUpperCase(); });
 
   bgColorPicker.addEventListener('input', (e) => setBg(e.target.value.replace('#','')));
   personColorPicker.addEventListener('input', (e) => setPerson(e.target.value.replace('#','')));
@@ -626,6 +734,8 @@
   randomizeBtn.addEventListener('click', () => {
     setBg(randomHex());
     setPerson(randomHex());
+    setAccessory(accNames[Math.floor(Math.random() * accNames.length)]);
+    setAccColor(randomHex());
     randomizeBtn.classList.remove('spin');
     void randomizeBtn.offsetWidth;
     randomizeBtn.classList.add('spin');
@@ -659,7 +769,7 @@
 
       canvas.toBlob((blob) => {
         const link = document.createElement('a');
-        link.download = `pfp-${bgColorPicker.value.replace('#','')}-${personColorPicker.value.replace('#','')}-${exportSize}.png`;
+        link.download = `pfp-${bgColorPicker.value.replace('#','')}-${personColorPicker.value.replace('#','')}-${currentAcc}-${exportSize}.png`;
         link.href = URL.createObjectURL(blob);
         document.body.appendChild(link);
         link.click();
