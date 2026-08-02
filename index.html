@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PFP//STUDIO — Avatar Colorizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- AD NETWORK LOADER (Google AdSense)
+     Uncomment once your AdSense account is approved, and swap in your
+     own client ID (find it in AdSense → Account → Settings).
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+-->
+<style>
+  :root{
+    --s1:#f6f7f9;
+    --s2:#e7e9ed;
+    --s3:#d3d6dc;
+    --s4:#b4b8c0;
+    --steel:#8b8f99;
+    --ink:#33353c;
+    --ink-deep:#1c1d21;
+    --line:rgba(28,29,33,0.12);
+    --sheen:rgba(255,255,255,0.75);
+    --disp:'Sora',sans-serif;
+    --sans:'Space Grotesk',sans-serif;
+    --mono:'Space Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      linear-gradient(128deg, var(--s1) 0%, var(--s2) 28%, var(--s3) 52%, var(--s2) 74%, var(--s1) 100%);
+    color:var(--ink);
+    font-family:var(--sans);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 18px 64px;
+    position:relative;
+  }
+
+  .top{
+    width:100%;
+    max-width:1000px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-bottom:18px;
+    margin-bottom:36px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    font-family:var(--disp);
+    font-weight:800;
+    font-size:18px;
+    letter-spacing:0.02em;
+    color:var(--ink-deep);
+  }
+  .brand .slash{color:var(--steel); font-weight:500;}
+  .tagline{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--steel);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .tagline::before{
+    content:"";
+    width:6px;height:6px;border-radius:50%;
+    background:var(--s1);
+    box-shadow:0 0 0 1px var(--steel) inset, 0 1px 1px rgba(255,255,255,0.8);
+    display:inline-block;
+  }
+
+  .stage{
+    width:100%;
+    max-width:1000px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:48px;
+    align-items:start;
+  }
+  @media (max-width:780px){
+    .stage{grid-template-columns:1fr; gap:34px;}
+  }
+
+  .preview-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+    width:100%;
+  }
+
+  /* device bezel — brushed matte silver */
+  .device{
+    width:100%;
+    max-width:340px;
+    padding:16px;
+    border-radius:26px;
+    background:linear-gradient(150deg, #fbfbfc 0%, #e2e4e8 20%, #c7cad0 40%, #f2f3f5 55%, #c2c5cb 75%, #eceef0 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.9) inset,
+      0 -1px 0 rgba(0,0,0,0.08) inset,
+      0 24px 48px -18px rgba(28,29,33,0.35),
+      0 2px 6px rgba(28,29,33,0.08);
+    position:relative;
+    overflow:hidden;
+  }
+  .device::before{
+    content:"";
+    position:absolute;
+    top:0; left:-60%;
+    width:60%; height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,0.55) 45%, transparent 90%);
+    transform:skewX(-18deg);
+    animation:sheen-sweep 5s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes sheen-sweep{
+    0%{left:-60%;}
+    45%{left:130%;}
+    100%{left:130%;}
+  }
+
+  .device-notch{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:2px 8px 12px;
+    position:relative;
+    z-index:1;
+  }
+  .device-dot{width:7px;height:7px;border-radius:50%;background:var(--s1); box-shadow:0 0 0 1px var(--steel) inset;}
+  .device-label{
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:0.12em;
+    color:var(--ink);
+    opacity:0.55;
+  }
+
+  .screen{
+    aspect-ratio:1/1;
+    border-radius:15px;
+    background:linear-gradient(160deg,#e9eaed,#cfd2d8);
+    box-shadow:
+      inset 0 2px 6px rgba(28,29,33,0.25),
+      inset 0 0 0 1px rgba(255,255,255,0.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:9%;
+    position:relative;
+    z-index:1;
+  }
+
+  #pfpSvg{
+    width:100%;
+    height:100%;
+    display:block;
+    filter:drop-shadow(0 8px 16px rgba(28,29,33,0.18));
+  }
+
+  .size-label{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--steel);
+  }
+  .size-label b{color:var(--ink-deep); font-weight:700;}
+
+  .res-row{
+    display:flex;
+    gap:8px;
+    width:100%;
+    max-width:340px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  .res-chip{
+    font-family:var(--mono);
+    font-size:11px;
+    padding:8px 14px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    background:linear-gradient(160deg,#fbfbfc,#e3e5e9);
+    color:var(--steel);
+    cursor:pointer;
+    letter-spacing:0.04em;
+    transition:all 0.15s ease;
+    box-shadow:0 1px 2px rgba(28,29,33,0.06);
+  }
+  .res-chip:hover{color:var(--ink); border-color:var(--s4);}
+  .res-chip.active{
+    background:linear-gradient(160deg,#3a3d44,#1c1d21);
+    color:var(--s1);
+    border-color:var(--ink-deep);
+    font-weight:700;
+  }
+
+  .download-btn{
+    width:100%;
+    max-width:340px;
+    padding:16px 20px;
+    background:linear-gradient(160deg,#4a4d54,#232428);
+    color:var(--s1);
+    border:1px solid rgba(0,0,0,0.3);
+    border-radius:10px;
+    font-family:var(--disp);
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.04em;
+    cursor:pointer;
+    transition:transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease;
+    box-shadow:0 10px 22px -10px rgba(28,29,33,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .download-btn:hover{background:linear-gradient(160deg,#585b63,#2b2c31); box-shadow:0 14px 26px -10px rgba(28,29,33,0.55), inset 0 1px 0 rgba(255,255,255,0.2);}
+  .download-btn:active{transform:scale(0.98);}
+
+  .randomize-btn{
+    width:100%;
+    max-width:340px;
+    padding:14px 20px;
+    background:linear-gradient(160deg,#fbfbfc,#e3e5e9);
+    color:var(--ink);
+    border:1px solid var(--line);
+    border-radius:10px;
+    font-family:var(--disp);
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:0.04em;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    transition:border-color 0.15s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow:0 1px 2px rgba(28,29,33,0.06);
+  }
+  .randomize-btn:hover{border-color:var(--s4); box-shadow:0 6px 14px -6px rgba(28,29,33,0.25);}
+  .randomize-btn:active{transform:scale(0.98);}
+  .randomize-btn .dice{
+    font-size:14px;
+    display:inline-block;
+    color:var(--steel);
+    transition:transform 0.4s ease;
+  }
+  .randomize-btn.spin .dice{transform:rotate(220deg);}
+
+  .controls-col{
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+    width:100%;
+  }
+
+  .control-block{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px;
+    background:linear-gradient(160deg, rgba(255,255,255,0.7), rgba(255,255,255,0.25));
+    box-shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 8px 20px -14px rgba(28,29,33,0.3);
+  }
+
+  .control-title{
+    font-family:var(--disp);
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+  .swatch-dot{
+    width:10px;height:10px;border-radius:3px;
+    border:1px solid rgba(28,29,33,0.2);
+    box-shadow:0 1px 2px rgba(28,29,33,0.15);
+  }
+
+  .picker-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+
+  input[type="color"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:52px;
+    height:52px;
+    border:none;
+    border-radius:10px;
+    padding:0;
+    cursor:pointer;
+    background:none;
+    flex-shrink:0;
+    box-shadow:0 2px 6px rgba(28,29,33,0.2);
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper{padding:0; border-radius:10px;}
+  input[type="color"]::-webkit-color-swatch{border:2px solid #fff; border-radius:10px;}
+  input[type="color"]::-moz-color-swatch{border:2px solid #fff; border-radius:10px;}
+
+  .hex-field{
+    flex:1;
+    display:flex;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:rgba(255,255,255,0.6);
+    padding:0 12px;
+    box-shadow:inset 0 1px 3px rgba(28,29,33,0.08);
+  }
+  .hex-field:focus-within{border-color:var(--steel); box-shadow:inset 0 1px 3px rgba(28,29,33,0.08), 0 0 0 3px rgba(139,143,153,0.15);}
+  .hex-field span{
+    font-family:var(--mono);
+    font-size:14px;
+    color:var(--steel);
+  }
+  .hex-field input[type="text"]{
+    border:none;
+    background:transparent;
+    outline:none;
+    font-family:var(--mono);
+    font-size:14px;
+    padding:12px 4px;
+    width:100%;
+    color:var(--ink-deep);
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+
+  .swatches{
+    display:flex;
+    gap:9px;
+    margin-top:15px;
+    flex-wrap:wrap;
+  }
+  .swatch{
+    width:22px;
+    height:22px;
+    border-radius:6px;
+    cursor:pointer;
+    border:1px solid rgba(255,255,255,0.8);
+    box-shadow:0 1px 3px rgba(28,29,33,0.25);
+    transition:transform 0.12s ease;
+  }
+  .swatch:hover{transform:translateY(-2px);}
+
+  .preset-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+  }
+  .preset-swatch{
+    aspect-ratio:1/1;
+    border-radius:9px;
+    cursor:pointer;
+    border:1px solid rgba(255,255,255,0.8);
+    box-shadow:0 2px 5px rgba(28,29,33,0.2);
+    transition:transform 0.12s ease;
+  }
+  .preset-swatch:hover{transform:translateY(-2px);}
+
+  .note{
+    font-family:var(--mono);
+    font-size:11px;
+    line-height:1.7;
+    color:var(--steel);
+    padding-top:2px;
+  }
+  .note b{color:var(--ink-deep); font-weight:700;}
+
+  footer{
+    margin-top:48px;
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.08em;
+    color:var(--s4);
+    text-align:center;
+  }
+  footer a{color:var(--steel); text-decoration:underline; text-underline-offset:2px;}
+
+  .ad-slot{
+    width:100%;
+    max-width:1000px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    margin:0 auto;
+  }
+  .ad-slot .ad-tag{
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--s4);
+  }
+  .ad-slot .ad-frame{
+    width:100%;
+    min-height:100px;
+    border:1px dashed var(--line);
+    border-radius:10px;
+    background:rgba(255,255,255,0.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .ad-slot.top-ad{margin-bottom:36px;}
+  .ad-slot.bottom-ad{margin-top:44px; margin-bottom:0;}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">PFP<span class="slash">//</span>STUDIO</div>
+  <div class="tagline">avatar render unit v3</div>
+</div>
+
+<!-- AD SLOT: TOP BANNER
+     Replace the .ad-frame contents below with your ad network's snippet
+     once approved (e.g. Google AdSense <ins class="adsbygoogle">...). -->
+<div class="ad-slot top-ad">
+  <span class="ad-tag">Advertisement</span>
+  <div class="ad-frame">
+    <!-- <ins class="adsbygoogle"
+          style="display:block; width:100%; min-height:100px;"
+          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+          data-ad-slot="XXXXXXXXXX"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
+  </div>
+</div>
+
+<div class="stage">
+
+  <div class="preview-col">
+    <div class="device">
+      <div class="device-notch">
+        <span class="device-label">SIGNAL // OK</span>
+        <span class="device-dot"></span>
+      </div>
+      <div class="screen">
+        <svg id="pfpSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <circle id="bgCircle" cx="100" cy="100" r="100" fill="#8e97a3"/>
+          <g id="personGroup" fill="#ffffff">
+            <circle cx="100" cy="80" r="34"/>
+            <path d="M100,124 C55,124 26,153 26,192 C26,197 30,200 35,200 L165,200 C170,200 174,197 174,192 C174,153 145,124 100,124 Z"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="size-label">LIVE PREVIEW — EXPORT RES: <b id="sizeReadout">512×512</b></div>
+
+    <div class="res-row" id="resRow">
+      <button class="res-chip" data-size="320">320</button>
+      <button class="res-chip active" data-size="512">512</button>
+      <button class="res-chip" data-size="1024">1024</button>
+      <button class="res-chip" data-size="2048">2048</button>
+    </div>
+
+    <button class="download-btn" id="downloadBtn">▾ Download PNG — Free</button>
+    <button class="randomize-btn" id="randomizeBtn"><span class="dice">◆</span> Randomize Colours</button>
+  </div>
+
+  <div class="controls-col">
+
+    <div class="control-block">
+      <div class="control-title"><span class="swatch-dot" id="bgDot" style="background:#8e97a3;"></span>Background Colour</div>
+      <div class="picker-row">
+        <input type="color" id="bgColorPicker" value="#8e97a3">
+        <div class="hex-field">
+          <span>#</span>
+          <input type="text" id="bgHexInput" maxlength="6" value="8E97A3">
+        </div>
+      </div>
+      <div class="swatches" id="bgSwatches"></div>
+    </div>
+
+    <div class="control-block">
+      <div class="control-title"><span class="swatch-dot" id="personDot" style="background:#ffffff;"></span>Person Colour</div>
+      <div class="picker-row">
+        <input type="color" id="personColorPicker" value="#ffffff">
+        <div class="hex-field">
+          <span>#</span>
+          <input type="text" id="personHexInput" maxlength="6" value="FFFFFF">
+        </div>
+      </div>
+      <div class="swatches" id="personSwatches"></div>
+    </div>
+
+    <div class="control-block presets-block">
+      <div class="control-title">Quick Combos</div>
+      <div class="preset-grid" id="presetGrid"></div>
+    </div>
+
+    <div class="note">
+      Type any hex on <b>either</b> layer or grab the wheel. Nothing uploads — it's drawn and exported straight in your browser.
+    </div>
+
+  </div>
+
+</div>
+
+<!-- AD SLOT: BOTTOM BANNER -->
+<div class="ad-slot bottom-ad">
+  <span class="ad-tag">Advertisement</span>
+  <div class="ad-frame">
+    <!-- <ins class="adsbygoogle"
+          style="display:block; width:100%; min-height:100px;"
+          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+          data-ad-slot="XXXXXXXXXX"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
+  </div>
+</div>
+
+<footer>NO SIGN-UP · NO WATERMARK · RUNS LOCAL &nbsp;·&nbsp; <a href="privacy-policy.html">Privacy Policy</a></footer>
+
+<script>
+  const bgCircle = document.getElementById('bgCircle');
+  const personGroup = document.getElementById('personGroup');
+  const bgColorPicker = document.getElementById('bgColorPicker');
+  const personColorPicker = document.getElementById('personColorPicker');
+  const bgHexInput = document.getElementById('bgHexInput');
+  const personHexInput = document.getElementById('personHexInput');
+  const bgDot = document.getElementById('bgDot');
+  const personDot = document.getElementById('personDot');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const resRow = document.getElementById('resRow');
+  const svgEl = document.getElementById('pfpSvg');
+  const sizeReadout = document.getElementById('sizeReadout');
+
+  let exportSize = 512;
+
+  function isValidHex(hex){
+    return /^[0-9A-Fa-f]{6}$/.test(hex);
+  }
+
+  function setBg(hex){
+    const val = '#' + hex;
+    bgCircle.setAttribute('fill', val);
+    bgColorPicker.value = val;
+    bgDot.style.background = val;
+    bgHexInput.value = hex.toUpperCase();
+  }
+
+  function setPerson(hex){
+    const val = '#' + hex;
+    personGroup.setAttribute('fill', val);
+    personColorPicker.value = val;
+    personDot.style.background = val;
+    personHexInput.value = hex.toUpperCase();
+  }
+
+  bgColorPicker.addEventListener('input', (e) => setBg(e.target.value.replace('#','')));
+  personColorPicker.addEventListener('input', (e) => setPerson(e.target.value.replace('#','')));
+
+  bgHexInput.addEventListener('input', (e) => {
+    const hex = e.target.value.replace('#','').trim();
+    if(isValidHex(hex)) setBg(hex);
+  });
+  personHexInput.addEventListener('input', (e) => {
+    const hex = e.target.value.replace('#','').trim();
+    if(isValidHex(hex)) setPerson(hex);
+  });
+  bgHexInput.addEventListener('blur', () => { bgHexInput.value = bgColorPicker.value.replace('#','').toUpperCase(); });
+  personHexInput.addEventListener('blur', () => { personHexInput.value = personColorPicker.value.replace('#','').toUpperCase(); });
+
+  // Matte silver-leaning quick swatches
+  const bgSwatchColors = ['8E97A3','2B2D33','C7CAD0','9BA0AA','4A4D54','E7E9ED','6B6F78','1C1D21'];
+  const personSwatchColors = ['FFFFFF','1C1D21','D3D6DC','8B8F99','2B2D33','F6F7F9','B4B8C0','54575F'];
+
+  function buildSwatchRow(containerId, colors, applyFn){
+    const container = document.getElementById(containerId);
+    colors.forEach(hex => {
+      const el = document.createElement('div');
+      el.className = 'swatch';
+      el.style.background = '#' + hex;
+      el.title = '#' + hex;
+      el.addEventListener('click', () => applyFn(hex));
+      container.appendChild(el);
+    });
+  }
+  buildSwatchRow('bgSwatches', bgSwatchColors, setBg);
+  buildSwatchRow('personSwatches', personSwatchColors, setPerson);
+
+  // Presets: [bg, person] — silver / graphite combos
+  const presets = [
+    ['8E97A3','FFFFFF'],
+    ['1C1D21','D3D6DC'],
+    ['C7CAD0','2B2D33'],
+    ['4A4D54','F6F7F9'],
+    ['9BA0AA','1C1D21'],
+    ['E7E9ED','54575F'],
+    ['2B2D33','B4B8C0'],
+    ['6B6F78','FFFFFF'],
+  ];
+  const presetGrid = document.getElementById('presetGrid');
+  presets.forEach(([bg, person]) => {
+    const el = document.createElement('div');
+    el.className = 'preset-swatch';
+    el.style.background = `linear-gradient(135deg, #${bg} 50%, #${person} 50%)`;
+    el.title = `#${bg} / #${person}`;
+    el.addEventListener('click', () => { setBg(bg); setPerson(person); });
+    presetGrid.appendChild(el);
+  });
+
+  // Randomize
+  const randomizeBtn = document.getElementById('randomizeBtn');
+  function randomHex(){
+    return Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0').toUpperCase();
+  }
+  randomizeBtn.addEventListener('click', () => {
+    setBg(randomHex());
+    setPerson(randomHex());
+    randomizeBtn.classList.remove('spin');
+    void randomizeBtn.offsetWidth;
+    randomizeBtn.classList.add('spin');
+  });
+
+  // Resolution chips
+  resRow.addEventListener('click', (e) => {
+    const chip = e.target.closest('.res-chip');
+    if(!chip) return;
+    document.querySelectorAll('.res-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    exportSize = parseInt(chip.dataset.size, 10);
+    sizeReadout.textContent = `${exportSize}×${exportSize}`;
+  });
+
+  // Download as PNG
+  downloadBtn.addEventListener('click', () => {
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgEl);
+    const svgBlob = new Blob([svgString], {type:'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = exportSize;
+      canvas.height = exportSize;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, exportSize, exportSize);
+      URL.revokeObjectURL(url);
+
+      canvas.toBlob((blob) => {
+        const link = document.createElement('a');
+        link.download = `pfp-${bgColorPicker.value.replace('#','')}-${personColorPicker.value.replace('#','')}-${exportSize}.png`;
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, 'image/png');
+    };
+    img.src = url;
+  });
+</script>
+
+</body>
+</html>
